@@ -2,6 +2,7 @@ using GridWatch.Infrastructure.Data;
 using GridWatch.Infrastructure.Ieso;
 using GridWatch.Infrastructure.Ingestion;
 using GridWatch.Infrastructure.Queries;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,6 +90,14 @@ public static class DependencyInjection
         }
         else
         {
+            // SQLite will not create missing folders, e.g. /home/data on Azure App Service.
+            var file = new SqliteConnectionStringBuilder(db.Database.GetConnectionString()).DataSource;
+            var isFilePath = file != ":memory:" && !file.StartsWith("file:", StringComparison.OrdinalIgnoreCase);
+            if (isFilePath && Path.GetDirectoryName(Path.GetFullPath(file)) is { Length: > 0 } folder)
+            {
+                Directory.CreateDirectory(folder);
+            }
+
             await db.Database.EnsureCreatedAsync(ct);
         }
 

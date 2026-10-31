@@ -4,11 +4,13 @@
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-Web_API-512BD4)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
-![Azure](https://img.shields.io/badge/Azure-App_Service_%2B_SQL-0078D4?logo=microsoftazure&logoColor=white)
+![Azure](https://img.shields.io/badge/Azure-deployment--ready-0078D4?logo=microsoftazure&logoColor=white)
 
 A live dashboard for Ontario's electricity system. An **ASP.NET Core** service pulls the IESO's public market reports on a schedule, stores them with **Entity Framework Core** in **SQL Server / Azure SQL**, and serves a REST API and **SignalR** push updates to a **React** front end. It shows demand, real-time price, generation by fuel and an estimate of carbon intensity.
 
-![Dashboard screenshot](docs/screenshot.png)
+The IESO already publishes this data on its [Power Data](https://ieso.ca/power-data) page. The point of this project is the engineering behind a dashboard like that: reliable ingestion of a utility's raw reports, a tested data model, a documented API with live updates, and infrastructure as code for Azure. It also adds two things the IESO page doesn't show: a stored history behind a REST API, and an estimate of carbon intensity.
+
+![Dashboard demo](docs/demo.gif)
 
 ## What it shows
 
@@ -18,6 +20,8 @@ A live dashboard for Ontario's electricity system. An **ASP.NET Core** service p
 - **Estimated carbon intensity** in g CO₂e/kWh, using IPCC median life-cycle emission factors.
 - **Daily summary**: peak and average demand, average price, clean share and intensity per market day. Days with unpublished hours are marked partial.
 - **Live updates**: the server pushes a SignalR message when new data lands, and the page refreshes the affected charts.
+
+![Dashboard screenshot](docs/screenshot.png)
 
 ## Architecture
 
@@ -161,7 +165,7 @@ Settings live in `appsettings.json` and can be overridden with environment varia
 ## Tests
 
 ```bash
-dotnet test                       # 57 tests: unit, ingestion and API integration
+dotnet test                       # 58 tests: unit, ingestion, database and API integration
 cd web && npm test                # 9 tests: formatting and components
 ```
 
@@ -172,9 +176,14 @@ cd web && npm test                # 9 tests: formatting and components
 
 CI runs on every push: formatting, a warnings-as-errors build, all tests (including SQL Server), a dependency vulnerability scan, front-end lint, typecheck, tests and build, and a Docker build with a smoke test.
 
-## Deploying to Azure
+## Azure (deployment-ready, not deployed)
 
-[`infra/main.bicep`](infra/main.bicep) creates a Linux App Service and an Azure SQL Database on the free offer, in Canada Central. See [docs/deploy-azure.md](docs/deploy-azure.md) for the step-by-step guide.
+The app is not hosted anywhere; run it locally as described above. [`infra/main.bicep`](infra/main.bicep) describes the Azure deployment as code, in two modes:
+
+- **Free mode:** App Service F1 with SQLite in persistent `/home` storage. No ongoing cost within the free tier's limits.
+- **Full mode:** App Service with Azure SQL Database (serverless, free offer). This is the production architecture, but this app's 5-minute polling would use the month's free database compute in about two and a half days, after which the database pauses until the next month.
+
+[docs/deploy-azure.md](docs/deploy-azure.md) has the deployment steps, the cost arithmetic behind the two modes, and what production hardening would add (managed identity, Key Vault, private networking, OIDC deployment from GitHub Actions).
 
 ## Project structure
 
@@ -186,15 +195,15 @@ src/
 tests/GridWatch.Tests/       xUnit: Core, Infrastructure, Api
 web/                         React + TypeScript + Vite dashboard
 infra/                       Bicep template for Azure
-docs/                        Azure deployment guide, code walkthrough, screenshot
+docs/                        Azure deployment guide, code walkthrough, screenshot, demo
 ```
 
 ## Limitations and next steps
 
 - Emissions are estimated from global median factors, not measured Ontario plant emissions.
-- On the free App Service tier, ingestion pauses while the site is idle and catches up on the next visit.
+- If deployed on the free App Service tier, ingestion would pause while the site is idle and catch up on the next visit.
 - Upserts load the incoming time window and compare in memory. This suits these volumes, but a larger system would use a bulk `MERGE`.
-- Possible additions: per-generator output from the GenOutputCapability report, intertie flows, and passwordless Azure SQL access with managed identity.
+- Possible additions: a "cleanest hours to use power" view (when carbon intensity and price are usually lowest, by hour of day), per-generator output from the GenOutputCapability report, intertie flows, and passwordless Azure SQL access with managed identity.
 
 ## License and data
 
