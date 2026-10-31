@@ -1,0 +1,28 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+publish/
+app.zip
+TestResults/
+coverage*/
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
+
+# Front end
+web/node_modules/
+web/dist/
+# The React build is generated into the API's web root
+src/GridWatch.Api/wwwroot/
+
+# Secrets and editors
+.env
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store

@@ -1,0 +1,40 @@
+# Runs the app against SQL Server 2022, the same engine as Azure SQL.
+#   cp .env.example .env    # then set your own password
+#   docker compose up --build
+# Open http://localhost:8080
+#
+# On Apple Silicon, enable "Use Rosetta for x86/amd64 emulation" in Docker Desktop:
+# the SQL Server image is x64 only.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  app:
+    build: .
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      Database__Provider: SqlServer
+      ConnectionStrings__GridWatch: "Server=sqlserver;Database=GridWatch;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      Admin__ApiKey: ${ADMIN_API_KEY:-}
+    ports:
+      - "8080:8080"
+
+volumes:
+  sqldata:

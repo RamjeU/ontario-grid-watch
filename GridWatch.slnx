@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GridWatch.Api/GridWatch.Api.csproj" />
+    <Project Path="src/GridWatch.Core/GridWatch.Core.csproj" />
+    <Project Path="src/GridWatch.Infrastructure/GridWatch.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GridWatch.Tests/GridWatch.Tests.csproj" />
+  </Folder>
+</Solution>

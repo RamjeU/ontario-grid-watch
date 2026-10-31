@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="10.1.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.11.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Real IESO data trimmed to two weeks, shared with the app's bundled sample. -->
+    <None Include="..\..\src\GridWatch.Infrastructure\SampleData\*" LinkBase="Fixtures" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GridWatch.Api\GridWatch.Api.csproj" />
+  </ItemGroup>
+
+</Project>
